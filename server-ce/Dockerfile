@@ -7,6 +7,8 @@ FROM $OVERLEAF_BASE_TAG
 
 WORKDIR /overleaf
 
+ENV NODE_OPTIONS=--use-openssl-ca
+
 # Add required source files
 # -------------------------
 ADD server-ce/genScript.js /overleaf/genScript.js
@@ -53,9 +55,9 @@ RUN chmod 644 /etc/logrotate.d/overleaf
 # ----------------------
 ADD server-ce/cron /overleaf/cron
 ADD server-ce/config/crontab-history /etc/cron.d/crontab-history
-RUN chmod 600 /etc/cron.d/crontab-history
+RUN chmod 660 /etc/cron.d/crontab-history
 ADD server-ce/config/crontab-deletion /etc/cron.d/crontab-deletion
-RUN chmod 600 /etc/cron.d/crontab-deletion
+RUN chmod 660 /etc/cron.d/crontab-deletion
 
 # Copy Phusion Image startup and shutdown scripts to their locations
 # ------------------------------------------------------------------
@@ -112,7 +114,10 @@ ENV GRACEFUL_SHUTDOWN_DELAY_SECONDS=1
 ENV NODE_ENV="production"
 ENV LOG_LEVEL="info"
 
+# Remove stuff we don't want
+# RUN rm /etc/my_init.d/10_syslog-ng.init \
+    # && rm /etc/my_init.post_shutdown.d/10_syslog-ng.shutdown
 
-EXPOSE 80
+EXPOSE 8008
 
 ENTRYPOINT ["/sbin/my_init"]

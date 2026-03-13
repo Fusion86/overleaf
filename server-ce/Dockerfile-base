@@ -2,7 +2,7 @@
 # Overleaf Base Image (sharelatex/sharelatex-base)
 # --------------------------------------------------
 
-FROM phusion/baseimage:noble-1.0.2
+FROM docker.io/phusion/baseimage:noble-1.0.2
 
 # Makes sure LuaTex cache is writable
 # -----------------------------------
@@ -10,7 +10,12 @@ ENV TEXMFVAR=/var/lib/overleaf/tmp/texmf-var
 
 # Update to ensure dependencies are updated
 # ------------------------------------------
-ENV REBUILT_AFTER="2025-12-17"
+ENV REBUILT_AFTER="2026-01-14"
+
+# TLS certs (e.g for company TLS inspection)
+# ------------------------------------------
+COPY certs/* /usr/local/share/ca-certificates/
+RUN update-ca-certificates
 
 # Install dependencies
 # --------------------
@@ -63,7 +68,7 @@ RUN mkdir /install-tl-unx \
 &&  echo "tlpdbopt_autobackup 0" >> /install-tl-unx/texlive.profile \
 &&  echo "tlpdbopt_install_docfiles 0" >> /install-tl-unx/texlive.profile \
 &&  echo "tlpdbopt_install_srcfiles 0" >> /install-tl-unx/texlive.profile \
-&&  echo "selected_scheme scheme-basic" >> /install-tl-unx/texlive.profile \
+&&  echo "selected_scheme scheme-full" >> /install-tl-unx/texlive.profile \
     \
 &&  /install-tl-unx/install-tl \
       -profile /install-tl-unx/texlive.profile \
@@ -80,12 +85,8 @@ RUN mkdir /install-tl-unx \
 &&  rm -rf /install-tl-unx
 
 
-# Set up overleaf user and home directory
+# Set up overleaf directories
 # -----------------------------------------
-RUN adduser --system --group --home /overleaf --no-create-home overleaf && \
-	mkdir -p /var/lib/overleaf && \
-	chown www-data:www-data /var/lib/overleaf && \
+RUN mkdir -p /var/lib/overleaf && \
 	mkdir -p /var/log/overleaf && \
-	chown www-data:www-data /var/log/overleaf && \
-	mkdir -p /var/lib/overleaf/data/template_files && \
-	chown www-data:www-data /var/lib/overleaf/data/template_files
+	mkdir -p /var/lib/overleaf/data/template_files
